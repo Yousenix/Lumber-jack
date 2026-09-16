@@ -1,6 +1,15 @@
 import msvcrt
 import time
 import random as r
+import sqlite3 as sql
+
+
+con = sql.connect("scores.db")
+
+cur = con.cursor()
+
+cur.execute("CREATE TABLE IF NOT EXISTS score(score)")
+
 
 
 RED = lambda text: f"\033[31m{text}\033[0m"
@@ -19,6 +28,15 @@ score = 0
 FreeR = 0
 FreeL = 0
 
+def max_score():
+    res = cur.execute("SELECT MAX(score) FROM score")
+    max_score = res.fetchone()[0]
+
+    if max_score is None:
+        print("No scores yet!")
+    else:
+        print("Your max score is", GREEN(max_score))
+
 game = [
     [" ", f"{BROWN("|")}", " "],
     [" ", f"{BROWN("|")}", " "],
@@ -31,6 +49,12 @@ game = [
     [" ", f"{BROWN("|")}", " "],
     [" ", f"{BROWN("|")}", "@"],
 ]
+
+
+def game_over():
+    print(f"\n{RED('GAME OVER!')}\nyour score: {BLUE(score)}")
+    cur.execute("INSERT INTO score VALUES (?)", (score,))
+    con.commit()
 
 def nextline():
     global score
@@ -86,7 +110,7 @@ def move():
     return True
 
 
-print(f"start: press {YELLOW("Space")}\nquit: press {YELLOW("Esc")}\nMove: arrows button (left & right)")
+print(f"start: press {YELLOW("Space")}\nquit: press {YELLOW("Esc")}\nMove: {YELLOW(" arrow buttons (left & right)")}\nmax score: press {YELLOW("m")}")
 
 # --- main loop and logic ---
 
@@ -96,6 +120,10 @@ while True:
 
         key = msvcrt.getch()
 
+        if key == b"m":
+            max_score()
+            break
+    
         if key == b'\xe0':
             key = msvcrt.getch()
 
@@ -105,8 +133,8 @@ while True:
                     game[9][0] = "@"
                     game[9][2] = " "
                 elif game[9][0] == f"{GREEN("-")}":
-                    print(f"\n{RED("GAME OVER!")}\nyour score: {BLUE(score)}")
-                    break
+                   game_over()
+                   break
 
             # RIGHT
             elif key == b'M':
@@ -114,17 +142,17 @@ while True:
                     game[9][2] = "@"
                     game[9][0] = " "
                 elif game[9][2] == f"{GREEN("-")}":
-                    print(f"\n{RED("GAME OVER!")}\nyour score: {BLUE(score)}")
+                    game_over()
                     break
 
             result = move()
 
             if result == False:
-                print(f"\n{RED("GAME OVER!")}\nyour score: {BLUE(score)}")
+                game_over()
                 break
-                break
+
             if "@" not in game[9]:
-                print(f"\n{RED("GAME OVER!")}\nyour score: {BLUE(score)}")
+                game_over()
                 break
 
             for _ in range(30):
@@ -139,8 +167,7 @@ while True:
                 print("".join(row))
 
         elif key == b'\x1b':
-            print(f"\nGoodBye 👋\nyour score: {BLUE(score)}")
+            game_over()
             break
 
     time.sleep(0.01)
-    
