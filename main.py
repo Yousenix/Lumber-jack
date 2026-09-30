@@ -24,6 +24,31 @@ BROWN = lambda text: f"\033[38;5;94m{text}\033[0m"
 
 PURPLE = lambda text: f"\033[35m{text}\033[0m"
 
+
+difficulty_int = 2
+
+def defficulty_():
+    global difficulty_int
+
+    difficulty = input(f"""
+{YELLOW("Select the difficulty level")}
+{GREEN("Easy")}
+{GREEN("Normal")}
+{GREEN("Hard")}
+{PURPLE("It is set to Normal by default.")}
+ : """)
+
+    if difficulty in ["easy","Easy","آسون","آسان","ایزی"]:
+        difficulty_int = 1
+    elif difficulty in ["normal","Normal","نرمال","معمولی"]:
+        difficulty_int = 2
+    elif difficulty in ["hard","Hard","هارد","سخت"]:
+        difficulty_int = 5
+    else :
+        print(f"{RED("Please select one of the options: easy, normal, or hard.")}")
+        defficulty_()
+
+
 score = 0 
 FreeR = 0
 FreeL = 0
@@ -61,7 +86,7 @@ def nextline():
     global FreeR
     global FreeL
 
-    C = r.randint(0, 5)
+    C = r.randint(0, difficulty_int)
     score += 1
 
     if C == 0:
@@ -110,7 +135,7 @@ def move():
     return True
 
 
-print(f"start: press {YELLOW("Space")}\nquit: press {YELLOW("Esc")}\nMove: {YELLOW(" arrow buttons (left & right)")}\nmax score: press {YELLOW("m")}")
+print(f"start: press {YELLOW("Space")}\nquit: press {YELLOW("Esc")}\nMove: {YELLOW(" arrow buttons (left & right)")}\nmax score: press {YELLOW("m")}\nDifficulty level : press {YELLOW("d")}")
 
 # --- main loop and logic ---
 
@@ -123,10 +148,12 @@ while True:
         if key == b"m":
             max_score()
             break
-    
+
+        elif key == b'd':
+            defficulty_()
         if key == b'\xe0':
             key = msvcrt.getch()
-
+                
             # LEFT
             if key == b'K':
                 if game[9][0] == " ":
