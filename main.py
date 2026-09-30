@@ -30,24 +30,28 @@ difficulty_int = 2
 def defficulty_():
     global difficulty_int
 
-    difficulty = input(f"""
+    while True:
+        difficulty = input(f"""
 {YELLOW("Select the difficulty level")}
 {GREEN("Easy")}
 {GREEN("Normal")}
 {GREEN("Hard")}
 {PURPLE("It is set to Normal by default.")}
- : """)
+: """)
 
-    if difficulty in ["easy","Easy","آسون","آسان","ایزی"]:
-        difficulty_int = 1
-    elif difficulty in ["normal","Normal","نرمال","معمولی"]:
-        difficulty_int = 2
-    elif difficulty in ["hard","Hard","هارد","سخت"]:
-        difficulty_int = 5
-    else :
-        print(f"{RED("Please select one of the options: easy, normal, or hard.")}")
-        defficulty_()
-
+        if difficulty in ["easy","Easy","آسون","آسان","ایزی"]:
+            difficulty_int = 1
+            break
+        elif difficulty in ["normal","Normal","نرمال","معمولی"]:
+            difficulty_int = 2
+            break
+        elif difficulty in ["hard","Hard","هارد","سخت"]:
+            difficulty_int = 5
+            break
+        else :
+            print(f"{RED("Please select one of the options: easy, normal, or hard.")}")
+            defficulty_()
+    
 
 score = 0 
 FreeR = 0
@@ -134,67 +138,70 @@ def move():
     
     return True
 
+def Game():
+    print(f"start: press {YELLOW("Space")}\nquit: press {YELLOW("Esc")}\nMove: {YELLOW(" arrow buttons (left & right)")}\nmax score: press {YELLOW("m")}\nDifficulty level : press {YELLOW("d")}")
 
-print(f"start: press {YELLOW("Space")}\nquit: press {YELLOW("Esc")}\nMove: {YELLOW(" arrow buttons (left & right)")}\nmax score: press {YELLOW("m")}\nDifficulty level : press {YELLOW("d")}")
+    # --- main loop and logic ---
 
-# --- main loop and logic ---
+    while True:
 
-while True:
+        if msvcrt.kbhit():
 
-    if msvcrt.kbhit():
-
-        key = msvcrt.getch()
-
-        if key == b"m":
-            max_score()
-            break
-
-        elif key == b'd':
-            defficulty_()
-        if key == b'\xe0':
             key = msvcrt.getch()
-                
-            # LEFT
-            if key == b'K':
-                if game[9][0] == " ":
-                    game[9][0] = "@"
-                    game[9][2] = " "
-                elif game[9][0] == f"{GREEN("-")}":
-                   game_over()
-                   break
 
-            # RIGHT
-            elif key == b'M':
-                if game[9][2] == " ":
-                    game[9][2] = "@"
-                    game[9][0] = " "
-                elif game[9][2] == f"{GREEN("-")}":
+            if key == b"m":
+                max_score()
+                break
+
+            elif key == b'd':
+                defficulty_()
+            
+            if key == b'\xe0':
+                key = msvcrt.getch()
+                    
+                # LEFT
+                if key == b'K':
+                    if game[9][0] == " ":
+                        game[9][0] = "@"
+                        game[9][2] = " "
+                    elif game[9][0] == f"{GREEN("-")}":
+                        game_over()
+                        break
+
+                # RIGHT
+                elif key == b'M':
+                    if game[9][2] == " ":
+                        game[9][2] = "@"
+                        game[9][0] = " "
+                    elif game[9][2] == f"{GREEN("-")}":
+                        game_over()
+                        break
+
+                result = move()
+
+                if result == False:
                     game_over()
                     break
 
-            result = move()
+                if "@" not in game[9]:
+                    game_over()
+                    break
 
-            if result == False:
+                for _ in range(30):
+                    print("")
+                for row in game:
+                    print("".join(row))
+
+            elif key == b' ':
+                for _ in range(50):
+                    print("")
+                for row in game:
+                    print("".join(row))
+
+            elif key == b'\x1b':
                 game_over()
                 break
 
-            if "@" not in game[9]:
-                game_over()
-                break
+        time.sleep(0.01)
 
-            for _ in range(30):
-                print("")
-            for row in game:
-                print("".join(row))
-
-        elif key == b' ':
-            for _ in range(50):
-                print("")
-            for row in game:
-                print("".join(row))
-
-        elif key == b'\x1b':
-            game_over()
-            break
-
-    time.sleep(0.01)
+Game()
