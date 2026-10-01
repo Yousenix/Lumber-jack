@@ -4,13 +4,6 @@ import random as r
 import sqlite3 as sql
 
 
-con = sql.connect("scores.db")
-
-cur = con.cursor()
-
-cur.execute("CREATE TABLE IF NOT EXISTS score(score)")
-
-
 
 RED = lambda text: f"\033[31m{text}\033[0m"
 
@@ -25,10 +18,49 @@ BROWN = lambda text: f"\033[38;5;94m{text}\033[0m"
 PURPLE = lambda text: f"\033[35m{text}\033[0m"
 
 
-difficulty_int = 2
+
+con = sql.connect("game_data.db")
+cur = con.cursor()
+
+
+cur.execute("""
+CREATE TABLE IF NOT EXISTS score(
+    score,
+    difficulty
+)
+""")
+
+cur.execute("""
+CREATE TABLE IF NOT EXISTS settings(
+    difficulty
+)
+""")
+
+con.commit()
+
+
+cur.execute("SELECT difficulty FROM settings LIMIT 1")
+saved_difficulty = cur.fetchone()
+
+if saved_difficulty is None:
+    cur.execute("INSERT INTO settings VALUES (?)", ("Normal",))
+    con.commit()
+    difficulty_int = 2
+else:
+    saved_difficulty = saved_difficulty[0]
+
+    if saved_difficulty == "Easy":
+        difficulty_int = 1
+    elif saved_difficulty == "Normal":
+        difficulty_int = 2
+    elif saved_difficulty == "Hard":
+        difficulty_int = 5
+
+
+
 
 def defficulty_():
-    global difficulty_int
+    global difficulty_int , difficulty_name
 
     while True:
         difficulty = input(f"""
@@ -41,17 +73,27 @@ def defficulty_():
 
         if difficulty in ["easy","Easy","آسون","آسان","ایزی"]:
             difficulty_int = 1
+            difficulty_name = "Easy"
             break
+
         elif difficulty in ["normal","Normal","نرمال","معمولی"]:
             difficulty_int = 2
+            difficulty_name = "Normal"
             break
+
         elif difficulty in ["hard","Hard","هارد","سخت"]:
             difficulty_int = 5
+            difficulty_name = "Hard"
             break
-        else :
-            print(f"{RED("Please select one of the options: easy, normal, or hard.")}")
-            defficulty_()
-    
+
+        else:
+            print(RED("Please select one of the options: easy, normal, or hard."))
+
+    cur.execute(
+        "UPDATE settings SET difficulty = ?",
+        (difficulty_name,)
+    )
+    con.commit()
 
 score = 0 
 FreeR = 0
@@ -82,7 +124,12 @@ game = [
 
 def game_over():
     print(f"\n{RED('GAME OVER!')}\nyour score: {BLUE(score)}")
-    cur.execute("INSERT INTO score VALUES (?)", (score,))
+
+    cur.execute(
+        "INSERT INTO score VALUES (?, ?)",
+        (score, difficulty_name)
+    )
+
     con.commit()
 
 def nextline():
