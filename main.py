@@ -43,17 +43,19 @@ cur.execute("SELECT difficulty FROM settings LIMIT 1")
 saved_difficulty = cur.fetchone()
 
 if saved_difficulty is None:
-    cur.execute("INSERT INTO settings VALUES (?)", ("Normal",))
+    difficulty_name = "Normal"
+    cur.execute("INSERT INTO settings VALUES (?)", (difficulty_name,))
     con.commit()
     difficulty_int = 2
-else:
-    saved_difficulty = saved_difficulty[0]
 
-    if saved_difficulty == "Easy":
+else:
+    difficulty_name = saved_difficulty[0]
+
+    if difficulty_name == "Easy":
         difficulty_int = 1
-    elif saved_difficulty == "Normal":
+    elif difficulty_name == "Normal":
         difficulty_int = 2
-    elif saved_difficulty == "Hard":
+    elif difficulty_name == "Hard":
         difficulty_int = 5
 
 
@@ -132,6 +134,19 @@ def game_over():
 
     con.commit()
 
+
+def history():
+    cur.execute("SELECT score, difficulty FROM score")
+    history_data = cur.fetchall()
+
+    if not history_data:
+        print("No scores yet!")
+    else:
+        print("\nScore History:")
+        for score_value, difficulty in history_data:
+            print(f"Score: {score_value} | Difficulty: {difficulty}")
+
+
 def nextline():
     global score
     global FreeR
@@ -186,7 +201,7 @@ def move():
     return True
 
 def Game():
-    print(f"start: press {YELLOW("Space")}\nquit: press {YELLOW("Esc")}\nMove: {YELLOW(" arrow buttons (left & right)")}\nmax score: press {YELLOW("m")}\nDifficulty level : press {YELLOW("d")}")
+    print(f"start: press {YELLOW("Space")}\nquit: press {YELLOW("Esc")}\nMove: {YELLOW(" arrow buttons (left & right)")}\nmax score: press {YELLOW("m")}\nDifficulty level : press {YELLOW("d")}\nHistory : press {YELLOW("h")}")
 
     # --- main loop and logic ---
 
@@ -198,10 +213,12 @@ def Game():
 
             if key == b"m":
                 max_score()
-                break
 
             elif key == b'd':
                 defficulty_()
+
+            elif key == b'h':
+                history()
             
             if key == b'\xe0':
                 key = msvcrt.getch()
