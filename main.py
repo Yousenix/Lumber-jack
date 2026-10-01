@@ -280,11 +280,7 @@ def Game():
 
             key = msvcrt.getch()
 
-            if key == b"m":
-                max_score()
-                print_max_score()
-
-            elif key == b'd':
+            if key == b'd':
                 defficulty_()
 
             elif key == b'h':
