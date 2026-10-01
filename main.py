@@ -206,13 +206,13 @@ def Statistics():
     print(f"""
 ========== {PURPLE('STATISTICS')} ==========
 
-Total Games: {saved_total}
-Highest Score: {highest}
-Average Score: {Average():.2f}
+Total Games: {YELLOW(saved_total)}
+Highest Score: {YELLOW(highest)}
+Average Score: {YELLOW(f"{Average():.2f}")}
 
-Easy Games: {saved_easy}
-Normal Games: {saved_normal}
-Hard Games: {saved_hard}
+Easy Games: {YELLOW(saved_easy)}
+Normal Games: {YELLOW(saved_normal)}
+Hard Games: {YELLOW(saved_hard)}
 """)
 
 def nextline():
