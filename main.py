@@ -36,7 +36,35 @@ CREATE TABLE IF NOT EXISTS settings(
 )
 """)
 
-con.commit()
+cur.execute("""
+CREATE TABLE IF NOT EXISTS statistics(
+    total INT,
+    easy INT,
+    normal INT,
+    hard INT
+)
+""")
+
+cur.execute("SELECT * FROM statistics LIMIT 1")
+saved_statistics = cur.fetchone()
+
+if saved_statistics is None:
+    cur.execute(
+        "INSERT INTO statistics VALUES (?, ?, ?, ?)",
+        (0, 0, 0, 0)
+    )
+    con.commit()
+
+    saved_total = 0
+    saved_easy = 0
+    saved_normal = 0
+    saved_hard = 0
+
+else:
+    saved_total = saved_statistics[0]
+    saved_easy = saved_statistics[1]
+    saved_normal = saved_statistics[2]
+    saved_hard = saved_statistics[3]
 
 
 cur.execute("SELECT difficulty FROM settings LIMIT 1")
@@ -57,8 +85,6 @@ else:
         difficulty_int = 2
     elif difficulty_name == "Hard":
         difficulty_int = 5
-
-
 
 
 def defficulty_():
@@ -101,14 +127,9 @@ score = 0
 FreeR = 0
 FreeL = 0
 
-def max_score():
-    res = cur.execute("SELECT MAX(score) FROM score")
-    max_score = res.fetchone()[0]
-
-    if max_score is None:
-        print("No scores yet!")
-    else:
-        print("Your max score is", GREEN(max_score))
+def get_max_score():
+    cur.execute("SELECT MAX(score) FROM score")
+    return cur.fetchone()[0]
 
 game = [
     [" ", f"{BROWN("|")}", " "],
@@ -125,11 +146,32 @@ game = [
 
 
 def game_over():
+    global saved_total
+    global saved_easy
+    global saved_normal
+    global saved_hard
+
     print(f"\n{RED('GAME OVER!')}\nyour score: {BLUE(score)}")
 
     cur.execute(
         "INSERT INTO score VALUES (?, ?)",
         (score, difficulty_name)
+    )
+
+    saved_total += 1
+
+    if difficulty_name == "Easy":
+        saved_easy += 1
+
+    elif difficulty_name == "Normal":
+        saved_normal += 1
+
+    elif difficulty_name == "Hard":
+        saved_hard += 1
+
+    cur.execute(
+        "UPDATE statistics SET total = ?, easy = ?, normal = ?, hard = ?",
+        (saved_total, saved_easy, saved_normal, saved_hard)
     )
 
     con.commit()
@@ -146,6 +188,32 @@ def history():
         for score_value, difficulty in history_data:
             print(f"Score: {score_value} | Difficulty: {difficulty}")
 
+def Average():
+    cur.execute("SELECT AVG(score) FROM score")
+    average = cur.fetchone()[0]
+
+    if average is None:
+        return 0
+
+    return average
+
+def Statistics():
+    highest = get_max_score()
+
+    if highest is None:
+        highest = "No scores yet!"
+
+    print(f"""
+========== {PURPLE('STATISTICS')} ==========
+
+Total Games: {saved_total}
+Highest Score: {highest}
+Average Score: {Average():.2f}
+
+Easy Games: {saved_easy}
+Normal Games: {saved_normal}
+Hard Games: {saved_hard}
+""")
 
 def nextline():
     global score
@@ -198,10 +266,11 @@ def move():
         return False
     game[9][player_pos] = "@"
     
-    return True
+    return True    
+
 
 def Game():
-    print(f"start: press {YELLOW("Space")}\nquit: press {YELLOW("Esc")}\nMove: {YELLOW(" arrow buttons (left & right)")}\nmax score: press {YELLOW("m")}\nDifficulty level : press {YELLOW("d")}\nHistory : press {YELLOW("h")}")
+    print(f"start: press {YELLOW("Space")}\nquit: press {YELLOW("Esc")}\nMove: {YELLOW(" arrow buttons (left & right)")}\nStatistics: press {YELLOW("s")}\nDifficulty level : press {YELLOW("d")}\nHistory : press {YELLOW("h")}")
 
     # --- main loop and logic ---
 
@@ -213,12 +282,16 @@ def Game():
 
             if key == b"m":
                 max_score()
+                print_max_score()
 
             elif key == b'd':
                 defficulty_()
 
             elif key == b'h':
                 history()
+
+            elif key == b's':
+                Statistics()
             
             if key == b'\xe0':
                 key = msvcrt.getch()
