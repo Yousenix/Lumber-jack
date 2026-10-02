@@ -3,7 +3,8 @@ import time
 import random as r
 import sqlite3 as sql
 
-
+q = False
+Game_running = False
 
 RED = lambda text: f"\033[31m{text}\033[0m"
 
@@ -146,35 +147,38 @@ game = [
 
 
 def game_over():
-    global saved_total
-    global saved_easy
-    global saved_normal
-    global saved_hard
+    global saved_normal , saved_hard , saved_easy , saved_total , Game_running
 
-    print(f"\n{RED('GAME OVER!')}\nyour score: {BLUE(score)}")
+    Game_running = False
+    
+    if score != 0 :
+        print(f"""\n{RED('GAME OVER!')}\nyour score: {BLUE(score)}
+            
 
-    cur.execute(
-        "INSERT INTO score VALUES (?, ?)",
-        (score, difficulty_name)
-    )
+            """)
 
-    saved_total += 1
+        cur.execute(
+            "INSERT INTO score VALUES (?, ?)",
+            (score, difficulty_name)
+        )
 
-    if difficulty_name == "Easy":
-        saved_easy += 1
+        saved_total += 1
 
-    elif difficulty_name == "Normal":
-        saved_normal += 1
+        if difficulty_name == "Easy":
+            saved_easy += 1
 
-    elif difficulty_name == "Hard":
-        saved_hard += 1
+        elif difficulty_name == "Normal":
+            saved_normal += 1
 
-    cur.execute(
-        "UPDATE statistics SET total = ?, easy = ?, normal = ?, hard = ?",
-        (saved_total, saved_easy, saved_normal, saved_hard)
-    )
+        elif difficulty_name == "Hard":
+            saved_hard += 1
 
-    con.commit()
+        cur.execute(
+            "UPDATE statistics SET total = ?, easy = ?, normal = ?, hard = ?",
+            (saved_total, saved_easy, saved_normal, saved_hard)
+        )
+
+        con.commit()
 
 
 def history():
@@ -269,7 +273,32 @@ def move():
     return True    
 
 
+def reset_game():
+    global game, score, FreeL, FreeR
+
+    score = 0
+    FreeL = 0
+    FreeR = 0
+
+    game = [
+        [" ", f"{BROWN('|')}", " "],
+        [" ", f"{BROWN('|')}", " "],
+        [" ", f"{BROWN('|')}", f"{GREEN('-')}"],
+        [" ", f"{BROWN('|')}", f"{GREEN('-')}"],
+        [" ", f"{BROWN('|')}", " "],
+        [" ", f"{BROWN('|')}", " "],
+        [f"{GREEN('-')}", f"{BROWN('|')}", " "],
+        [" ", f"{BROWN('|')}", " "],
+        [" ", f"{BROWN('|')}", " "],
+        [" ", f"{BROWN('|')}", "@"],
+    ]
+
+
 def Game():
+    global Game_running , q
+
+    Game_running = True
+    
     print(f"start: press {YELLOW("Space")}\nquit: press {YELLOW("Esc")}\nMove: {YELLOW(" arrow buttons (left & right)")}\nStatistics: press {YELLOW("s")}\nDifficulty level : press {YELLOW("d")}\nHistory : press {YELLOW("h")}")
 
     # --- main loop and logic ---
@@ -333,8 +362,13 @@ def Game():
 
             elif key == b'\x1b':
                 game_over()
+                q = True
                 break
 
         time.sleep(0.01)
 
 Game()
+
+while Game_running == False and q == False:
+    reset_game()
+    Game()
