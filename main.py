@@ -150,13 +150,14 @@ def game_over():
     global saved_normal , saved_hard , saved_easy , saved_total , Game_running
 
     Game_running = False
-    
+
     if score != 0 :
         print(f"""\n{RED('GAME OVER!')}\nyour score: {BLUE(score)}
             
 
             """)
-
+        if score > get_max_score():
+            print("NEW HIGH SCORE!")
         cur.execute(
             "INSERT INTO score VALUES (?, ?)",
             (score, difficulty_name)
